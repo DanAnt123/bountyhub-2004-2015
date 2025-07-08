@@ -60,6 +60,32 @@ export async function fetchBounties() {
   return res.json();
 }
 
+/**
+ * PUBLIC_INTERFACE
+ * Create a new bounty.
+ * @param {{title: string, repo_link: string, description: string, amount: number}} data
+ * @returns {Promise<Object>} - The created bounty object or throws error.
+ */
+export async function createBounty(data) {
+  const res = await fetch(`${API_BASE}/bounties`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    let err = "Could not create bounty";
+    try {
+      const resp = await res.json();
+      if (resp && resp.error) err = resp.error;
+    } catch (e) { /* ignore */ }
+    throw new Error(err);
+  }
+  return res.json();
+}
+
 // Placeholder for token/session logic (could adapt to cookie/jwt scheme)
 export function logout() {
   // just a stub, session logic would be more involved
