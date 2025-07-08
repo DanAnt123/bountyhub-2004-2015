@@ -60,6 +60,31 @@ export async function fetchBounties() {
   return res.json();
 }
 
+// PUBLIC_INTERFACE
+/**
+ * Claim a bounty by bountyId.
+ * @param {string|number} bountyId
+ * @returns {Promise<Object>} Result payload or throws error.
+ */
+export async function claimBounty(bountyId) {
+  const res = await fetch(`${API_BASE}/bounties/${bountyId}/claim`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  if (!res.ok) {
+    let err = "Could not claim bounty";
+    try {
+      const resp = await res.json();
+      if (resp && resp.error) err = resp.error;
+    } catch (e) { /* ignore */ }
+    throw new Error(err);
+  }
+  return res.json();
+}
+
 /**
  * PUBLIC_INTERFACE
  * Create a new bounty.
