@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { fetchBounties, claimBounty } from "../api";
+import MarkAsCompletedButton from "../components/MarkAsCompletedButton";
 
 // PUBLIC_INTERFACE
 /**
  * Displays a full list of bounties fetched from backend, with modern cards.
- * Allows logged-in user to claim open bounties.
+ * Allows logged-in user to claim open bounties and mark claimed as complete.
  */
 function BountyList() {
   const [bounties, setBounties] = useState([]);
@@ -49,8 +50,15 @@ function BountyList() {
     }
   }
 
-  if (loading) return <div style={{marginTop:40}}>Loading bounties…</div>;
-  if (err) return <div style={{color:"crimson", marginTop:40}}>{err}</div>;
+  // UI-only update for completion
+  function handleCompletedRefresh(bountyId) {
+    setBounties(prev =>
+      prev.map(b => b.id === bountyId ? { ...b, status: "done" } : b)
+    );
+  }
+
+  if (loading) return <div style={{ marginTop: 40 }}>Loading bounties…</div>;
+  if (err) return <div style={{ color: "crimson", marginTop: 40 }}>{err}</div>;
 
   return (
     <div style={{ maxWidth: 900, margin: "32px auto" }}>
@@ -115,7 +123,7 @@ function BountyList() {
             >
               ${bounty.amount}
             </div>
-            {/* Claim button and status logic */}
+            {/* Claim and complete logic */}
             {bounty.status === "open" && isLoggedIn && (
               <button
                 style={{
@@ -138,9 +146,9 @@ function BountyList() {
                 {actionStatus[bounty.id] === "loading"
                   ? "Claiming…"
                   : (actionStatus[bounty.id] === "success"
-                      ? "Claimed!"
-                      : "Claim"
-                    )
+                    ? "Claimed!"
+                    : "Claim"
+                  )
                 }
               </button>
             )}
@@ -157,7 +165,28 @@ function BountyList() {
                 Login to claim
               </span>
             )}
-            {bounty.status !== "open" && (
+            {bounty.status === "claimed" && isLoggedIn && (
+              <MarkAsCompletedButton
+                bountyId={bounty.id}
+                currentStatus={bounty.status}
+                onComplete={() => handleCompletedRefresh(bounty.id)}
+                style={{ marginTop: 12 }}
+              />
+            )}
+            {bounty.status === "done" || bounty.status === "completed" ? (
+              <span
+                style={{
+                  marginTop: 16,
+                  fontWeight: 600,
+                  color: "#1aad3f",
+                  fontStyle: "italic",
+                  display: "inline-block",
+                }}
+              >
+                ✅ Completed
+              </span>
+            ) : null}
+            {bounty.status !== "open" && bounty.status !== "claimed" && bounty.status !== "done" && bounty.status !== "completed" && (
               <span
                 style={{
                   marginTop: 16,
@@ -167,7 +196,7 @@ function BountyList() {
                   display: "inline-block",
                 }}
               >
-                {bounty.status === "claimed" ? "Claimed" : bounty.status}
+                {bounty.status}
               </span>
             )}
           </div>
@@ -178,4 +207,3 @@ function BountyList() {
 }
 
 export default BountyList;
-

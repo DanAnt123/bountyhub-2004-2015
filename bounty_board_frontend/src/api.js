@@ -111,6 +111,31 @@ export async function createBounty(data) {
   return res.json();
 }
 
+// PUBLIC_INTERFACE
+/**
+ * Mark a bounty as complete (done) by bountyId.
+ * @param {string|number} bountyId
+ * @returns {Promise<Object>} Result payload or throws error.
+ */
+export async function completeBounty(bountyId) {
+  const res = await fetch(`${API_BASE}/bounties/${bountyId}/complete`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  if (!res.ok) {
+    let err = "Could not complete bounty";
+    try {
+      const resp = await res.json();
+      if (resp && resp.error) err = resp.error;
+    } catch (e) { /* ignore */ }
+    throw new Error(err);
+  }
+  return res.json();
+}
+
 // Placeholder for token/session logic (could adapt to cookie/jwt scheme)
 export function logout() {
   // just a stub, session logic would be more involved
